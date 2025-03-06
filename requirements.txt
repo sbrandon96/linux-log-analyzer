@@ -1,0 +1,5 @@
+watchdog
+psycopg2
+sqlalchemy
+pyyaml
+smtplib
