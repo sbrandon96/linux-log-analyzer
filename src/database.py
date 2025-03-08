@@ -52,20 +52,46 @@ class Database:
         self.conn.commit()
         print("[+] Table 'logs' is ready.")
 
-    def insert_log(self, log_level, message, source):
+    def insert_log(self, log_level, service, message, source_ip, user_name):
         """Inserts a log entry into the database."""
         insert_query = """
-        INSERT INTO logs (log_level, message, source) 
+        INSERT INTO logs (log_level, service, message, source_ip, user_name) 
         VALUES (%s, %s, %s);
         """
-        self.cursor.execute(insert_query, (log_level, message, source))
+        self.cursor.execute(insert_query, (log_level, service, message, source_ip, user_name))
         self.conn.commit()
+        
+    def insert_mock_logs(self):
+        """Inserts multiple mock log entries for testing."""
+        mock_data = [
+            ('INFO', 'AuthService', 'User login successful', '192.168.1.1', 'admin'),
+            ('ERROR', 'DBService', 'Connection timeout', '192.168.1.5', 'db_user'),
+            ('WARNING', 'WebServer', 'High memory usage detected', '192.168.1.10', 'sysadmin'),
+            ('DEBUG', 'ScriptRunner', 'Scheduled job executed', '192.168.1.20', 'automation'),
+            ('CRITICAL', 'Firewall', 'Unauthorized access detected', '10.0.0.3', 'security'),
+        ]
+        for log in mock_data:
+            self.insert_log(*log)  # Unpacking tuple
+        print("[+] Mock logs inserted.")
+
 
     def fetch_logs(self, limit=10):
         """Fetches recent log entries from the database."""
         fetch_query = "SELECT * FROM logs ORDER BY timestamp DESC LIMIT %s;"
         self.cursor.execute(fetch_query, (limit,))
         return self.cursor.fetchall()
+    
+    def fetch_logs_pretty(self, limit=10):
+        """Fetch logs and format them as dictionaries."""
+        fetch_query = "SELECT * FROM logs ORDER BY timestamp DESC LIMIT %s;"
+        self.cursor.execute(fetch_query, (limit,))
+        logs = self.cursor.fetchall()
+        
+        # Convert to list of dictionaries for readability
+        column_names = [desc[0] for desc in self.cursor.description]
+        logs_dict = [dict(zip(column_names, row)) for row in logs]
+        return logs_dict
+
 
     def close(self):
         """Closes the database connection."""

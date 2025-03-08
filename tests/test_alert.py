@@ -22,7 +22,7 @@ class TestAlert(unittest.TestCase):
         mock_server.sendmail.return_value = None  # Simulate successful sending
 
         # Call the function we want to test
-        send_alert('Test Alert', 'This is a test message', 'test@example.com')
+        send_alert('Test Alert', 'This is a test message', 'TEST_EMAIL')
 
         # Check that the SMTP connection was established
         MockSMTP.assert_called_once_with('smtp.mail.yahoo.com', '465')
@@ -30,7 +30,7 @@ class TestAlert(unittest.TestCase):
         # Check that the email was sent
         mock_server.sendmail.assert_called_once_with(
             os.getenv('EMAIL_USERNAME'),  # Dynamically pull sender email, 
-            'test@example.com', 
+            'TEST_EMAIL', 
             unittest.mock.ANY  # We use ANY because the message is dynamic
         )
 
