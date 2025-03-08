@@ -1,15 +1,19 @@
 import unittest
-from src.alert import send_alert
-from unittest.mock import patch
 import os
+from unittest.mock import patch
+from dotenv import load_dotenv
+from src.alert import send_alert
+
+# Load environment variables
+load_dotenv()
 
 class TestAlert(unittest.TestCase):
     @patch.dict(os.environ, {
-        'EMAIL_USERNAME': '[Insert Email Here]@yahoo.com',
-        'EMAIL_PASSWORD': '[Insert Password Here]',
-        'EMAIL_HOST': 'smtp.mail.yahoo.com',
-        'EMAIL_PORT': '465',
-        'EMAIL_USE_SSL': 'True'
+        'EMAIL_USERNAME': os.getenv('EMAIL_USERNAME', 'default_email'),
+        'EMAIL_PASSWORD': os.getenv('EMAIL_PASSWORD', 'default_password'),
+        'EMAIL_HOST': os.getenv('EMAIL_HOST', 'smtp.mail.yahoo.com'),
+        'EMAIL_PORT': os.getenv('EMAIL_PORT', '465'),
+        'EMAIL_USE_SSL': os.getenv('EMAIL_USE_SSL', 'True')
     })
     @patch('src.alert.smtplib.SMTP_SSL')
     def test_send_alert(self, MockSMTP):
@@ -25,7 +29,7 @@ class TestAlert(unittest.TestCase):
 
         # Check that the email was sent
         mock_server.sendmail.assert_called_once_with(
-            'sbrandon96@yahoo.com', 
+            os.getenv('EMAIL_USERNAME'),  # Dynamically pull sender email, 
             'test@example.com', 
             unittest.mock.ANY  # We use ANY because the message is dynamic
         )
