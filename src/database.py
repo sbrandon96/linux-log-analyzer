@@ -56,7 +56,7 @@ class Database:
         """Inserts a log entry into the database."""
         insert_query = """
         INSERT INTO logs (log_level, service, message, source_ip, user_name) 
-        VALUES (%s, %s, %s);
+        VALUES (%s, %s, %s, %s, %s);
         """
         self.cursor.execute(insert_query, (log_level, service, message, source_ip, user_name))
         self.conn.commit()
@@ -71,7 +71,10 @@ class Database:
             ('CRITICAL', 'Firewall', 'Unauthorized access detected', '10.0.0.3', 'security'),
         ]
         for log in mock_data:
-            self.insert_log(*log)  # Unpacking tuple
+            try:
+                self.insert_log(*log)  # Unpack the tuple
+            except Exception as e:
+                print(f"[!] Error inserting {log}: {e}")  # Catch and print the issue
         print("[+] Mock logs inserted.")
 
 
@@ -83,6 +86,7 @@ class Database:
     
     def fetch_logs_pretty(self, limit=10):
         """Fetch logs and format them as dictionaries."""
+        self.conn.rollback()  # Roll back any failed transaction
         fetch_query = "SELECT * FROM logs ORDER BY timestamp DESC LIMIT %s;"
         self.cursor.execute(fetch_query, (limit,))
         logs = self.cursor.fetchall()
